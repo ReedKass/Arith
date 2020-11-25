@@ -36,7 +36,6 @@ typedef struct pixdata {
 
 extern void decompress40(FILE *input)
 {
-    /* (1) READ IN compressed file */
     unsigned w, h, den;
     den = 255;
     int read = fscanf(input, "COMP40 Compressed Image Format 2\n%u %u", 
@@ -44,12 +43,12 @@ extern void decompress40(FILE *input)
     assert(read == 2);
     int c = getc(input);
     assert(c == '\n');
-    /* (2) unquantize all pixels into cvc */
+    
     UArray2_T word_array = UArray2_new(w / 2 , h / 2, sizeof(struct Pnm_rgb));
 
     UArray2_map_row_major(word_array, read_comp, input);
    
-    /* (3) transform from cvc to rgb */
+    
     UArray2b_T output_cv = UArray2b_new(w, h, 80, 2);
     UArray2_map_row_major(word_array, dequantize_and_unpack, &output_cv);
     UArray2b_map(output_cv, cvc_rgb_transform, &den);
@@ -59,11 +58,11 @@ extern void decompress40(FILE *input)
     pic.denominator = den;
     pic.pixels = output_cv;
     pic.methods = uarray2_methods_blocked;
-    /* (4) make PPM file and place rgb array into photo */
+
     Pnm_ppmwrite(stdout, &pic);
     UArray2b_free(&output_cv);
     UArray2_free(&word_array);
-    /* (5) properly output file */
+   
 
 }
 
